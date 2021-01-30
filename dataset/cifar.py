@@ -10,6 +10,18 @@ from .randaugment import RandAugmentMC
 
 logger = logging.getLogger(__name__)
 
+
+"""
+NOTE: 
+
+ - Idea extend this code for medical images. Create a get_dr function and a class DRSSL 
+
+ - To apply it to medical Images I migth need to replace this Values, 
+   mean, std, normal_mean, normal_std y eso.
+
+ - Also, cambiar lo del transform_labeled
+"""
+
 cifar10_mean = (0.4914, 0.4822, 0.4465)
 cifar10_std = (0.2471, 0.2435, 0.2616)
 cifar100_mean = (0.5071, 0.4867, 0.4408)
