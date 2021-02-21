@@ -10,18 +10,6 @@ from .randaugment import RandAugmentMC
 
 logger = logging.getLogger(__name__)
 
-
-"""
-NOTE: 
-
- - Idea extend this code for medical images. Create a get_dr function and a class DRSSL 
-
- - To apply it to medical Images I migth need to replace this Values, 
-   mean, std, normal_mean, normal_std y eso.
-
- - Also, cambiar lo del transform_labeled
-"""
-
 cifar10_mean = (0.4914, 0.4822, 0.4465)
 cifar10_std = (0.2471, 0.2435, 0.2616)
 cifar100_mean = (0.5071, 0.4867, 0.4408)
@@ -29,6 +17,34 @@ cifar100_std = (0.2675, 0.2565, 0.2761)
 normal_mean = (0.5, 0.5, 0.5)
 normal_std = (0.5, 0.5, 0.5)
 
+
+def get_dr(args):
+    transform_labeled = transforms.Compose([
+        transforms.RandomHorizontalFlip(),
+        transforms.RandomCrop(size=224, 
+                              padding=int(224*0.125),
+                              padding_mode='reflect'),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=cifar10_mean, std=cifar10_std) # CHANGE
+    ])
+
+    transform_val = transforms.Compose([
+        transforms.ToTensor(),
+        transforms.Normalize(mean=cifar10_mean, std=cifar10_std) # CHANGE
+    ])
+
+    train_labeled_dataset = datasets.ImageFolder(
+        root="/content/{}/train".format( LABELED), transform=transform_labeled
+    )
+
+    train_unlabeled_dataset = datasets.ImageFolder(
+        root="/content/{}/train".format(UNLABELED),
+        transform=TransformFixMatch(mean=cifar10_mean, std=cifar10_std),
+    )
+
+    test_dataset = datasets.ImageFolder(root="/content/test", transform=transform_val)
+
+    return train_labeled_dataset, train_unlabeled_dataset, test_dataset
 
 def get_cifar10(args, root):
     transform_labeled = transforms.Compose([
@@ -191,4 +207,5 @@ class CIFAR100SSL(datasets.CIFAR100):
 
 
 DATASET_GETTERS = {'cifar10': get_cifar10,
-                   'cifar100': get_cifar100}
+                   'cifar100': get_cifar100,
+                   'dr': get_dr}
