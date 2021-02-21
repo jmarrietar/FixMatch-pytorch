@@ -34,15 +34,15 @@ def get_dr(args, root):
     ])
 
     train_labeled_dataset = datasets.ImageFolder(
-        root="/{}/train".format(args.labeled), transform=transform_labeled
+        root="../{}/train".format(args.labeled), transform=transform_labeled
     )
 
     train_unlabeled_dataset = datasets.ImageFolder(
-        root="/{}/train".format(args.unlabeled),
+        root="../{}/train".format(args.unlabeled),
         transform=TransformFixMatch(mean=cifar10_mean, std=cifar10_std),
     )
 
-    test_dataset = datasets.ImageFolder(root="/test", transform=transform_val)
+    test_dataset = datasets.ImageFolder(root="../test", transform=transform_val)
 
     return train_labeled_dataset, train_unlabeled_dataset, test_dataset
 
