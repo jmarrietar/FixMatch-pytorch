@@ -21,7 +21,7 @@ normal_std = (0.5, 0.5, 0.5)
 def get_dr(args, root):
     transform_labeled = transforms.Compose([
         transforms.RandomHorizontalFlip(),
-        transforms.RandomCrop(size=224, 
+        transforms.RandomCrop(size=224,
                               padding=int(224*0.125),
                               padding_mode='reflect'),
         transforms.ToTensor(),
