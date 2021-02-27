@@ -143,6 +143,7 @@ def main():
                                          num_classes=args.num_classes)
 
         elif args.arch == 'densenet':
+            from torchvision import models
             model = models.densenet169(pretrained=True)
             ft = model.classifier.in_features
             model.classifier = torch.nn.Linear(ft, 2)
