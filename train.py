@@ -438,7 +438,6 @@ def test(args, test_loader, model, epoch):
     data_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    top5 = AverageMeter()
     end = time.time()
 
     if not args.no_progress:
@@ -458,24 +457,21 @@ def test(args, test_loader, model, epoch):
             prec1, prec5 = accuracy(outputs, targets, topk=(1, 5))
             losses.update(loss.item(), inputs.shape[0])
             top1.update(prec1.item(), inputs.shape[0])
-            top5.update(prec5.item(), inputs.shape[0])
             batch_time.update(time.time() - end)
             end = time.time()
             if not args.no_progress:
-                test_loader.set_description("Test Iter: {batch:4}/{iter:4}. Data: {data:.3f}s. Batch: {bt:.3f}s. Loss: {loss:.4f}. top1: {top1:.2f}. top5: {top5:.2f}. ".format(
+                test_loader.set_description("Test Iter: {batch:4}/{iter:4}. Data: {data:.3f}s. Batch: {bt:.3f}s. Loss: {loss:.4f}. top1: {top1:.2f}. ".format(
                     batch=batch_idx + 1,
                     iter=len(test_loader),
                     data=data_time.avg,
                     bt=batch_time.avg,
                     loss=losses.avg,
-                    top1=top1.avg,
-                    top5=top5.avg,
+                    top1=top1.avg
                 ))
         if not args.no_progress:
             test_loader.close()
 
     logger.info("top-1 acc: {:.2f}".format(top1.avg))
-    logger.info("top-5 acc: {:.2f}".format(top5.avg))
     return losses.avg, top1.avg
 
 
