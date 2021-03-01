@@ -22,6 +22,7 @@ from utils import AverageMeter, accuracy
 
 logger = logging.getLogger(__name__)
 best_acc = 0
+best_test_loss = 10000
 
 
 def save_checkpoint(state, is_best, checkpoint, filename='checkpoint.pth.tar'):
@@ -127,6 +128,7 @@ def main():
 
     args = parser.parse_args()
     global best_acc
+    global best_test_loss
 
     def create_model(args):
         if args.arch == 'wideresnet':
@@ -141,16 +143,26 @@ def main():
                                          depth=args.model_depth,
                                          width=args.model_width,
                                          num_classes=args.num_classes)
-
         elif args.arch == 'densenet':
             from torchvision import models
             model = models.densenet169(pretrained=True)
             ft = model.classifier.in_features
             model.classifier = torch.nn.Linear(ft, 2)
 
+        elif args.arch == 'resnet18':
+            from torchvision import models
+            model = models.resnet18(pretrained=True)
+            ft = model.fc.in_features
+            model.fc = torch.nn.Linear(ft, 2)
+
+        elif args.arch == 'resnet50':
+            from torchvision import models
+            model = models.resnet50(pretrained=True)
+            ft = model.fc.in_features
+            model.fc = torch.nn.Linear(ft, 2)
+
         logger.info("Total params: {:.2f}M".format(
             sum(p.numel() for p in model.parameters())/1e6))
-
         return model
 
     if args.local_rank == -1:
@@ -206,6 +218,9 @@ def main():
             args.model_cardinality = 8
             args.model_depth = 29
             args.model_width = 64
+
+    elif args.dataset == 'dr':
+        args.num_classes = 2
 
     labeled_dataset, unlabeled_dataset, test_dataset = DATASET_GETTERS[args.dataset](
         args, './data')
@@ -269,6 +284,7 @@ def main():
         args.out = os.path.dirname(args.resume)
         checkpoint = torch.load(args.resume)
         best_acc = checkpoint['best_acc']
+        best_test_loss = checkpoint['best_test_loss']
         args.start_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['state_dict'])
         if args.use_ema:
@@ -410,10 +426,15 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
             is_best = test_acc > best_acc
             best_acc = max(test_acc, best_acc)
 
+            is_best_test_loss = test_loss < best_test_loss
+            best_test_loss = min(test_loss, best_test_loss)
+
             model_to_save = model.module if hasattr(model, "module") else model
             if args.use_ema:
                 ema_to_save = ema_model.ema.module if hasattr(
                     ema_model.ema, "module") else ema_model.ema
+
+            """
             save_checkpoint({
                 'epoch': epoch + 1,
                 'state_dict': model_to_save.state_dict(),
@@ -423,6 +444,18 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
                 'optimizer': optimizer.state_dict(),
                 'scheduler': scheduler.state_dict(),
             }, is_best, args.out)
+            """
+
+            save_checkpoint({
+                'epoch': epoch + 1,
+                'state_dict': model_to_save.state_dict(),
+                'ema_state_dict': ema_to_save.state_dict() if args.use_ema else None,
+                'acc': test_acc,
+                'best_acc': best_acc,
+                'best_test_loss': best_test_loss,
+                'optimizer': optimizer.state_dict(),
+                'scheduler': scheduler.state_dict(),
+            }, is_best_test_loss, args.out)
 
             test_accs.append(test_acc)
             logger.info('Best top-1 acc: {:.2f}'.format(best_acc))
