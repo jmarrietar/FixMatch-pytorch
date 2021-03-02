@@ -21,9 +21,6 @@ from dataset.cifar import DATASET_GETTERS
 from utils import AverageMeter, accuracy
 
 logger = logging.getLogger(__name__)
-best_acc = 0
-best_test_loss = 10000
-
 
 def save_checkpoint(state, is_best, checkpoint, filename='checkpoint.pth.tar'):
     filepath = os.path.join(checkpoint, filename)
@@ -67,6 +64,10 @@ def de_interleave(x, size):
 
 
 def main():
+
+    best_acc = 0
+    best_test_loss = 10000
+
     parser = argparse.ArgumentParser(description='PyTorch FixMatch Training')
     parser.add_argument('--gpu-id', default='0', type=int,
                         help='id(s) for CUDA_VISIBLE_DEVICES')
@@ -131,6 +132,7 @@ def main():
                         help="don't use progress bar")
 
     args = parser.parse_args()
+
     global best_acc
     global best_test_loss
 
