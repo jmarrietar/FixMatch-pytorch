@@ -68,9 +68,6 @@ def de_interleave(x, size):
 
 def main():
 
-    best_acc = 0
-    best_test_loss = 10000
-
     parser = argparse.ArgumentParser(description='PyTorch FixMatch Training')
     parser.add_argument('--gpu-id', default='0', type=int,
                         help='id(s) for CUDA_VISIBLE_DEVICES')
@@ -325,6 +322,10 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
           model, optimizer, ema_model, scheduler, writer):
     if args.amp:
         from apex import amp
+
+    best_acc = 0
+    best_test_loss = 10000
+
     test_accs = []
     batch_time = AverageMeter()
     data_time = AverageMeter()
