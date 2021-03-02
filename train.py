@@ -22,6 +22,9 @@ from utils import AverageMeter, accuracy
 
 logger = logging.getLogger(__name__)
 
+global best_acc
+global best_test_loss
+
 def save_checkpoint(state, is_best, checkpoint, filename='checkpoint.pth.tar'):
     filepath = os.path.join(checkpoint, filename)
     torch.save(state, filepath)
@@ -132,9 +135,6 @@ def main():
                         help="don't use progress bar")
 
     args = parser.parse_args()
-
-    global best_acc
-    global best_test_loss
 
     def create_model(args):
         if args.arch == 'wideresnet':
