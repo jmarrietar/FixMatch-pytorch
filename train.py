@@ -325,7 +325,6 @@ def train(args, labeled_trainloader, unlabeled_trainloader, test_loader,
           model, optimizer, ema_model, scheduler, writer):
     if args.amp:
         from apex import amp
-    global best_acc
     test_accs = []
     batch_time = AverageMeter()
     data_time = AverageMeter()
